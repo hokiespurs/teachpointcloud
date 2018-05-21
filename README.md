@@ -218,6 +218,12 @@ The 3D pointcloud data can be visualized in modern web browsers using webGL.  [P
 
 ![potree](images/potree.gif)
 
+A basic script to generate a webpage using PotreeConverter is shown below.  This will generate a webpage named "pageName.html" in the `C:/potree_converted` directory.  This webpage will contain the data from `data.las`.  For more detailed examples involving coordinate systems and custom settings, see the [PotreeConverter](https://github.com/potree/PotreeConverter) github repository.
+
+```
+./PotreeConverter.exe C:/data.las -o C:/potree_converted -p pageName
+```
+
 ### 2D Orthophoto or DSM
 
 Tiles can easily be referenced to overlay on a basemap using leaflet.  Here is an example map hosted on the OSU Engineering server.
