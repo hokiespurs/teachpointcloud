@@ -1,12 +1,18 @@
 # <u>**Introduction to UAV Mapping**</u>
 
-Over the last decade, we have seen a dramatic increase in technology and interest in consumer grade UAVs. Much of this interest has came from the desire to use these platforms for aerial photography and video making. To feed this need, manufactures made made the UAVs easier to fly, safer, and a very capable camera platform. Seeing an opportunity, software developers have turned these consumer drones into very capable aerial mapping platforms. This report is a brief discussion on what UAV mapping is, its benefits, and how to perform it.
-
-
+Over the last decade, we have seen a dramatic increase in technology and interest in consumer grade Unmanned Aerial Vehicles(UAV/UAS).  Much of this interest has came from the desire to use these platforms for aerial photography and video making. To feed this need, manufactures made made the UAVs easier to fly, safer, and a very capable camera platform. Seeing an opportunity, hardware/software developers have developed very capable aerial mapping platforms. This document gives a brief overview of UAS data collection, processing, and web visualization.
 
 ### What is UAV Mapping?
 
-UAV mapping is a generic term that is used to describe the use of a unmanned platform to produce a model of the surface it has imaged. These products do include orthomosaic photos, elevation models, 3D models, and vegetation indexing (with the appropriate sensor). What makes this possible is the high resolution image that the UAV generates and the position data that is attached to that image. 
+UAV mapping is a generic term that is used to describe the use of an unmanned platform to produce 2D and 3D geospatial data. These data are generated at a much higher temporal and spatial resolution than previous methodologies at an inexpensive cost that makes it available to many researchers.  These products do include orthomosaic photos, elevation models, 3D pointclouds, and vegetation indexing (with the appropriate sensor).  There are many, many applications for UAS mapping.  A few examples are:
+
+- Farm Mapping to look at plant health
+- Landfills to look at volumes of trash
+- Quarries to measure volumes of extracted rock
+- Construction sites to look at progress and elevation gradients
+- Forest mapping to look at plant abundance and health
+- Beach erosion/accretion mapping
+- [Mapping Coral Reefs](https://hokiespurs.github.io/buck-island-ortho-map/)
 
 ![mapping](images/mapping.jpg)
 
@@ -38,15 +44,39 @@ At the end of the day, using a UAV for photogrammetry can be very beneficial for
 
 
 
-### Factors to consider 
+### Intuition for how the algorithm works
+
+**Structure from Motion (SfM)** is the algorithm at the foundation of the data processing.  This algorithm uses photogrammetry and computer vision to solve the camera positions and a pointcloud of the scene.  The algorithm relies on tracking keypoints in multiple images to infer depth, much like how our eyes compute depth.  In the figure below, 3 images represented by pyramids show how rays intersect at the true point on the box.
+
+![box](images/sfm.png)
+
+
+
+Texture is very important for SfM.  For example, this spinning cube below looks like it has a flat top, but it's hard to say because there is no texture.
+
+![no texture](images/cubenotex.gif)
+
+But when we add texture to the same "cube", as shown below, we can get a much better picture of the shape of the object.  When processing imagery using SfM, this same principal is very important.  If there is no "texture" to the object, then there are no keypoints to track, and the 3D model will be poor.
+
+![no texture](images/cubetex.gif)
+
+Another assumption is that the surface is not shiny.  The color associated with each pixel must come from the surface of the object, and not a reflection of another object.  For example, the Bean in Chicago would not work for SfM processing.
+
+![no texture](images/bean.jpg)
+
+
+
+### How to collect data 
+
+If you are interested in flying a UAS for mapping, it is highly recommended that you take a class to familiarize yourself with UAS safety and legal regulations.  At the time of writing this document (May, 2018), the FAA requires a drone pilot to be certified under Part107 by taking a test at an FAA testing site in order to perform **commercial operations**.  For recreational UAS flying, no formal tests are required, though an online class or video is highly recommended.   When conducting UAV mapping in the name of research while affiliated with OSU, the pilot must complete a flight safety course.  The regulations at OSU are constantly updated and evolving, so consult the [research office](https://research.oregonstate.edu/unmanned-systems-initiative) for the most up to date restrictions.
 
 ##### Flight Planning
 
 First, the pilot must determine if the desired location can be mapped legally. In many cases, the desired airspace could be restricted. Such as specific airspace for a nearby airport, National Park, and wildlife refuges. Additionally an organization, such as the USFS, may require additional approval to perform a flight in the name of research.
 
-Careful thought needs to be given when planning the flight for the data collection. The pilot needs to consider what is the goal of the flight. Is it to generate a 3D model or 2D model? And if it is a 3D model, is it one object of multiple objects? The answer to this question determines what kind of flight profile will be needed. 
+Careful thought needs to be given when planning the flight for the data collection. The pilot needs to consider what is the goal of the flight. Is it to generate a 3D model or 2D model? And if it is a 3D model, is it one object or multiple objects? The answer to this question determines what kind of flight profile will be needed. 
 
-For a 2D model, a simple parrel grid pattern works best. The altitude and photo overlap will determine the level of resolution for the model.
+For a 2D model, a simple parallel grid pattern works best. The altitude and photo overlap will determine the level of resolution for the model.
 
 ![2D_grid](images/2D_grid.jpeg)
 
@@ -76,7 +106,7 @@ The pilot needs to consider the time of day the flight will be conducted and wha
 
 
 
-The weather also affects the effectiveness of a flight as well. First, consumer UAVs are not attended to fly in incliment weather. Second, if the cloud cover is scattered, it can affect the constancy of lighting and ultimately the image quality of the model. However, if the clouds provide a solid overcast, it may be satisfactory conditions. That being said, it should be anticipated that the images will be darker.![DJI_0021](images/DJI_0021.JPG)
+The weather also affects the effectiveness of a flight as well. First, consumer UAVs are not attended to fly in inclement weather. Second, if the cloud cover is scattered, it can affect the constancy of lighting and ultimately the image quality of the model. However, if the clouds provide a solid overcast, it may be satisfactory conditions. That being said, it should be anticipated that the images will be darker.![DJI_0021](images/DJI_0021.JPG)
 
 
 
@@ -96,7 +126,7 @@ Additionally, the pilot must ensure that the flight profile is sufficiently abov
 
 ##### Desired accuracy
 
-Depending on the application of the model data, the accuracy must be considered. If it is just for general use, the GPS accuracy of the UAV may be satisfactory. However, if accuracy is critical to the purpose of the model, then the inclusion of ground control points (GCP) must be considered.![gcp](images/gcp.jpeg)
+Depending on the application of the model data, the accuracy must be considered. If it is just for general use or to make a basic basemap, the GPS accuracy of the UAV may be satisfactory. However, if accuracy is critical to the purpose of the model, then the inclusion of ground control points (GCP) must be considered.![gcp](images/gcp.jpeg)
 
 
 
@@ -140,7 +170,19 @@ Remember that the processing time is greatly affected by the number and file siz
 
 ### Exporting
 
-Similar to processing, the ability to export the data is greatly determined by the software being utilized. In most cases, the rasters (DEM and Ortho) can be exported in the form of a georeferenced .tiff file. This format makes it very easy to import the data into a GIS program. Additionally, by being in a .tiff format, the data will be able to be uploaded into a web service as well, such as GeoServer. The 3D objects are most often exported in a .obj format and can be difficult to work with due to their file size.
+##### 3D Pointcloud
+
+A pointcloud should be output as a `.las` file.
+
+##### 2D Imagery
+
+2D data products (orthophoto, dsm), should be output as a `.tiff`  in the desired coordinate system.
+
+If you want to make a web map, Agisoft Photoscan allows you to export 2D data products as tiles, which are easily added as a layer using leaflet.
+
+##### 3D Mesh
+
+A 3D mesh is most often exported as a `.obj` file
 
 ![qgis](images/qgis.PNG)
 
@@ -168,15 +210,38 @@ With a multispectral camera:
 
 https://www.youtube.com/watch?v=XF306Hp6Q4I
 
+## Web Visualization of UAS data
 
+### 3D Pointcloud
 
-### Oregon State University UAS Research
+The 3D pointcloud data can be visualized in modern web browsers using webGL.  [Potree](http://potree.org/) is a javascript library that enables the visualization of millions of points.  A windows binary executable to generate octrees for the pointcloud data and make a basic web page is on github [here](https://github.com/potree/PotreeConverter).
 
-When conducting UAV mapping in the name of research while attached to OSU, the pilot must complete a flight safety course. A pilot is not required to have a Part 107 license from the FAA. However, if operating under the OSU COA without Part 107, there must be a NOTAM filed.
+![potree](images/potree.gif)
 
-http://research.oregonstate.edu/unmanned-systems-initiative/uas-osu/home
+### 2D Orthophoto or DSM
 
+Tiles can easily be referenced to overlay on a basemap using leaflet.  Here is an example map hosted on the OSU Engineering server.
 
+![buck island](images/buck.gif)
+
+This example uses the following javascript code:
+
+```js
+L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    minZoom: 10,
+    maxNativeZoom: 21,
+    maxZoom: 23
+}).addTo(mymap);
+
+var tiles = L.tileLayer('http://research.engr.oregonstate.edu/lidar/pointcloud/20180319_USVI/googlemaps/20180325_MavicBuckIsland/{z}/{x}/{y}.png',{
+    minZoom: 10,
+    maxNativeZoom: 22,
+    maxZoom: 23,
+    noWrap: true,
+    bounds: mybounds,
+    attribution: '<div id="credits" style="display:inline">UAS Imagery acquired by Oregon State University in collaboration with NOAA and NPS | Basemap &copy; ArcGIS | Made By Richie Slocum | <a href="https://github.com/hokiespurs/usvi-noaa-data"><i class="fa fa-github"></i> More Info </a></div>'
+}).addTo(mymap);
+```
 
 ### Conclusion
 
