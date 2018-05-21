@@ -218,9 +218,9 @@ The 3D pointcloud data can be visualized in modern web browsers using webGL.  [P
 
 ![potree](images/potree.gif)
 
-A basic script to generate a webpage using PotreeConverter is shown below.  This will generate a webpage named "pageName.html" in the `C:/potree_converted` directory.  This webpage will contain the data from `data.las`.  For more detailed examples involving coordinate systems and custom settings, see the [PotreeConverter](https://github.com/potree/PotreeConverter) github repository.
+A basic script to generate a webpage using PotreeConverter.exe is shown below.  This will generate a webpage named "pageName.html" in the `C:/potree_converted` directory.  Run this command from the command prompt.  This webpage will contain the data from `data.las`.  For more detailed examples involving coordinate systems and custom settings, see the [PotreeConverter](https://github.com/potree/PotreeConverter) github repository, or type `./PotreeConverter.exe -h` into the command line.
 
-```
+```dos
 ./PotreeConverter.exe C:/data.las -o C:/potree_converted -p pageName
 ```
 
